@@ -12,13 +12,13 @@ import Logs from './components/Logs';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<'admin' | 'employee'>('employee');
+  const [userRole, setUserRole] = useState<'admin' | 'employee'>('admin');
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogin = (email: string, password: string, role: 'admin' | 'employee') => {
     setIsAuthenticated(true);
-    setUserRole(role);
+    setUserRole("admin");
     navigate('/dashboard');
   };
 
