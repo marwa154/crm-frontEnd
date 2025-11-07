@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Edit, Trash2, X, Toggle2 } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, X } from 'lucide-react';
 
 interface User {
   id: number;
@@ -76,20 +76,20 @@ export default function Users() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+      <div className="flex flex-col items-start justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
         <h2 className="text-2xl font-bold text-slate-900">Gestion des utilisateurs</h2>
         <button
           onClick={() => handleOpenModal()}
-          className="w-full sm:w-auto flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center justify-center w-full px-4 py-2 text-white bg-blue-600 rounded-lg sm:w-auto hover:bg-blue-700"
         >
           <Plus className="w-5 h-5 mr-2" />
           Nouvel utilisateur
         </button>
       </div>
 
-      <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200">
+      <div className="p-4 bg-white border shadow-sm sm:p-6 rounded-xl border-slate-200">
         <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+          <Search className="absolute w-5 h-5 transform -translate-y-1/2 left-3 top-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Rechercher par email ou nom..."
@@ -99,37 +99,37 @@ export default function Users() {
           />
         </div>
 
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Nom</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Email</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 hidden lg:table-cell">Rôle</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 hidden lg:table-cell">Clients</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Statut</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">Actions</th>
+                <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Nom</th>
+                <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Email</th>
+                <th className="hidden px-4 py-3 text-sm font-semibold text-left text-slate-700 lg:table-cell">Rôle</th>
+                <th className="hidden px-4 py-3 text-sm font-semibold text-left text-slate-700 lg:table-cell">Clients</th>
+                <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Statut</th>
+                <th className="px-4 py-3 text-sm font-semibold text-right text-slate-700">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="py-4 px-4">
+                  <td className="px-4 py-4">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                        <span className="text-blue-600 font-semibold">{user.fullName.charAt(0)}</span>
+                      <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-3 bg-blue-100 rounded-full">
+                        <span className="font-semibold text-blue-600">{user.fullName.charAt(0)}</span>
                       </div>
-                      <span className="font-medium text-slate-900 text-sm truncate">{user.fullName}</span>
+                      <span className="text-sm font-medium truncate text-slate-900">{user.fullName}</span>
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-sm text-slate-600 truncate">{user.email}</td>
-                  <td className="py-4 px-4 text-sm hidden lg:table-cell">
+                  <td className="px-4 py-4 text-sm truncate text-slate-600">{user.email}</td>
+                  <td className="hidden px-4 py-4 text-sm lg:table-cell">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                       {user.role === 'admin' ? 'Admin' : 'Employé'}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm text-slate-600 hidden lg:table-cell">{user.clientsManaged}</td>
-                  <td className="py-4 px-4">
+                  <td className="hidden px-4 py-4 text-sm text-slate-600 lg:table-cell">{user.clientsManaged}</td>
+                  <td className="px-4 py-4">
                     <button
                       onClick={() => handleToggleStatus(user.id)}
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -139,12 +139,12 @@ export default function Users() {
                       {user.status === 'active' ? 'Actif' : 'Inactif'}
                     </button>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="px-4 py-4">
                     <div className="flex justify-end space-x-2">
-                      <button onClick={() => handleOpenModal(user)} className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
+                      <button onClick={() => handleOpenModal(user)} className="p-2 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(user.id)} className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                      <button onClick={() => handleDelete(user.id)} className="p-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -155,13 +155,13 @@ export default function Users() {
           </table>
         </div>
 
-        <div className="md:hidden space-y-4">
+        <div className="space-y-4 md:hidden">
           {filteredUsers.map((user) => (
-            <div key={user.id} className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div key={user.id} className="p-4 border rounded-lg bg-slate-50 border-slate-200">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center flex-1">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-blue-600 font-semibold">{user.fullName.charAt(0)}</span>
+                  <div className="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-full">
+                    <span className="font-semibold text-blue-600">{user.fullName.charAt(0)}</span>
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900">{user.fullName}</p>
@@ -201,57 +201,57 @@ export default function Users() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 my-8">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-black bg-opacity-50">
+          <div className="w-full max-w-2xl p-6 my-8 bg-white shadow-xl rounded-xl">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-slate-900">{editingId ? 'Modifier' : 'Nouvel'} utilisateur</h3>
-              <button onClick={handleCloseModal} className="p-1 hover:bg-slate-100 rounded">
+              <button onClick={handleCloseModal} className="p-1 rounded hover:bg-slate-100">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nom complet</label>
+                <label className="block mb-1 text-sm font-medium text-slate-700">Nom complet</label>
                 <input
                   type="text"
                   required
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <label className="block mb-1 text-sm font-medium text-slate-700">Email</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Rôle</label>
+                <label className="block mb-1 text-sm font-medium text-slate-700">Rôle</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'employee' })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="employee">Employé</option>
                   <option value="admin">Administrateur</option>
                 </select>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
+              <div className="flex flex-col justify-end gap-3 mt-6 sm:flex-row">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 order-2 sm:order-1"
+                  className="order-2 px-4 py-2 border rounded-lg border-slate-300 text-slate-700 hover:bg-slate-50 sm:order-1"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 order-1 sm:order-2"
+                  className="order-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 sm:order-2"
                 >
                   {editingId ? 'Modifier' : 'Ajouter'}
                 </button>

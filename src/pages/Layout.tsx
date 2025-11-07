@@ -1,18 +1,17 @@
 import { ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Bell, User, LogOut } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface LayoutProps {
   children: ReactNode;
-  currentPage: string;
-  onNavigate: (page: string) => void;
-  onLogout: () => void;
-  userRole: string;
 }
 
-export default function Layout({ children, currentPage, onNavigate, onLogout, userRole }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  const currentPage=location.pathname.slice(1)
+  const {user,logout}=useAuth()
+ const userRole=user?.role
   const menuItems = [
     { id: 'dashboard', label: 'Tableau de bord', icon: '📊' },
     { id: 'clients', label: 'Clients', icon: '👥' },
@@ -24,34 +23,36 @@ export default function Layout({ children, currentPage, onNavigate, onLogout, us
       { id: 'logs', label: 'Journalisation', icon: '📋' },
     ] : []),
   ];
-
+const onLogout=()=>{
+  console.log("logout")
+}
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-200 sticky top-0 z-20">
+      <nav className="sticky top-0 z-20 bg-white border-b border-slate-200">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="md:hidden p-2 text-slate-600 hover:text-slate-900"
+                className="p-2 md:hidden text-slate-600 hover:text-slate-900"
               >
                 {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 ml-2 md:ml-0">Mini CRM</h1>
+              <h1 className="ml-2 text-lg font-bold sm:text-xl text-slate-900 md:ml-0">Mini CRM</h1>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <button className="p-2 text-slate-600 hover:text-slate-900 relative">
+              <button className="relative p-2 text-slate-600 hover:text-slate-900">
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute w-2 h-2 bg-red-500 rounded-full top-1 right-1"></span>
               </button>
-              <button className="p-2 text-slate-600 hover:text-slate-900 hidden sm:block">
+              <button className="hidden p-2 text-slate-600 hover:text-slate-900 sm:block">
                 <User className="w-5 h-5" />
               </button>
               <button
                 onClick={onLogout}
                 className="p-2 text-slate-600 hover:text-slate-900"
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut onClick={logout} className="w-5 h-5" />
               </button>
             </div>
           </div>
