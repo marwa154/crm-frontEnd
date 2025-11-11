@@ -9,11 +9,11 @@ export default function Auth() {
     role: 'employee' as 'admin' | 'employee'
   });
 
-  const loginMutation = useLogin();
+  const {mutate:loginMutation,isError} = useLogin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({
+    loginMutation({
       email: formData.email,
       password: formData.password,
     });
@@ -32,6 +32,14 @@ export default function Auth() {
 
         <div className="p-8 bg-white shadow-xl rounded-2xl">
           <form onSubmit={handleSubmit} className="space-y-4">
+              {isError && (
+              <div className="flex items-center gap-2 px-3 py-2 mt-2 text-sm text-red-600 border border-red-200 rounded-lg bg-red-50">
+                <svg xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856A2 2 0 0020 17.09L13.947 4.911a2 2 0 00-3.894 0L4 17.09A2 2 0 005.062 19z" />
+                </svg>
+                <span>Adresse e-mail ou mot de passe invalide</span>
+              </div>
+            )}
             <div>
               <label htmlFor="email" className="block mb-1 text-sm font-medium text-slate-700">
                 Email
@@ -61,9 +69,7 @@ export default function Auth() {
                 placeholder="••••••••"
               />
             </div>
-
-
-
+          
             <button
               type="submit"
               className="w-full px-4 py-3 font-medium text-white transition-all bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200"

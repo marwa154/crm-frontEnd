@@ -1,14 +1,14 @@
-// import { createClient } from "@supabase/supabase-js";
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "../../api/clientService";
 
 
-// export const useCreateClient = () => {
-//   const queryClient = useQueryClient();
+export const useCreateClient = () => {
+  const queryClient = useQueryClient();
 
-//   return useMutation({
-//     mutationFn: createClient,
-//     onSuccess: () => {
-//       queryClient.invalidateQueries({ queryKey: ["clients"] });
-//     },
-//   });
-// };
+  return useMutation({
+    mutationFn: createClient,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+    },
+  });
+};
