@@ -1,77 +1,103 @@
 import { useState } from 'react';
 import { Search, Plus, Edit, Trash2, X } from 'lucide-react';
+import { useCreateUser } from '../hooks/userHooks/useCreateUser';
+import { useUsers } from '../hooks/userHooks/useUsers';
+import { useUpdateUser } from '../hooks/userHooks/useUpdateUser';
+import { useDeleteUser } from '../hooks/userHooks/useDeleteUser';
 
 interface User {
-  id: number;
+  _id: string;
   email: string;
-  fullName: string;
+  name: string;
+  password: string;
   role: 'admin' | 'employee';
-  status: 'active' | 'inactive';
-  createdAt: string;
-  clientsManaged: number;
 }
 
 export default function Users() {
+  const [showError, setShowError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
-    fullName: '',
+    name: '',
+    password: '',
     role: 'employee' as 'admin' | 'employee',
   });
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, email: 'admin@crm.com', fullName: 'Admin CRM', role: 'admin', status: 'active', createdAt: '2025-01-15', clientsManaged: 0 },
-    { id: 2, email: 'jean.dupont@crm.com', fullName: 'Jean Dupont', role: 'employee', status: 'active', createdAt: '2025-02-01', clientsManaged: 12 },
-    { id: 3, email: 'marie.martin@crm.com', fullName: 'Marie Martin', role: 'employee', status: 'active', createdAt: '2025-02-15', clientsManaged: 8 },
-    { id: 4, email: 'pierre.bernard@crm.com', fullName: 'Pierre Bernard', role: 'employee', status: 'inactive', createdAt: '2025-03-01', clientsManaged: 5 },
-  ]);
 
-  const filteredUsers = users.filter(user =>
+  const { data: users, isPending: isLoadingUsers, isError: isErrorUsers } = useUsers();
+
+  const {
+    mutate: createUser,
+    isPending: isCreatingUser,
+    isSuccess: isCreateUserSuccess,
+    isError: isCreateUserError
+  } = useCreateUser();
+
+  const {
+    mutate: updateUser,
+    isPending: isUpdatingUser,
+    isSuccess: isUpdateUserSuccess,
+    isError: isUpdateUserError
+  } = useUpdateUser();
+
+  const {
+    mutate: deleteUser,
+    isPending: isDeletingUser,
+    isError: isDeleteUserError
+  } = useDeleteUser();
+
+  console.log(editingId)
+  const filteredUsers = users?.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleOpenModal = (user?: User) => {
     if (user) {
-      setFormData({ email: user.email, fullName: user.fullName, role: user.role });
-      setEditingId(user.id);
+      setFormData({ email: user.email, name: user.name, password: user.password, role: user.role });
+      setEditingId(user._id);
     } else {
-      setFormData({ email: '', fullName: '', role: 'employee' });
+      setFormData({ email: '', name: '', password: '', role: 'employee' });
       setEditingId(null);
     }
     setShowModal(true);
   };
-
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingId(null);
+    setShowError(false);
   };
-
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) {
-      setUsers(users.map(u => u.id === editingId ? { ...u, ...formData } : u));
-    } else {
-      setUsers([...users, {
-        id: Date.now(),
-        ...formData,
-        status: 'active',
-        createdAt: new Date().toISOString().split('T')[0],
-        clientsManaged: 0
-      }]);
-    }
-    handleCloseModal();
-  };
+  e.preventDefault();
 
-  const handleToggleStatus = (id: number) => {
-    setUsers(users.map(u =>
-      u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u
-    ));
-  };
+  if (editingId) {
+    updateUser(
+      { id: editingId, data: formData },
+      {
+        onSuccess: () => {
+          handleCloseModal();
+        },
+        onError: () => {
+          setShowError(true);
+        },
+      }
+    );
+  } else {
+    createUser(formData, {
+      onSuccess: () => {
+        handleCloseModal();
+      },
+      onError: () => {
+        setShowError(true);
+      },
+    });
+  }
+};
 
-  const handleDelete = (id: number) => {
-    setUsers(users.filter(u => u.id !== id));
+
+  const handleDelete = (id: string) => {
+    deleteUser(id);
   };
 
   return (
@@ -99,105 +125,103 @@ export default function Users() {
           />
         </div>
 
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Nom</th>
-                <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Email</th>
-                <th className="hidden px-4 py-3 text-sm font-semibold text-left text-slate-700 lg:table-cell">Rôle</th>
-                <th className="hidden px-4 py-3 text-sm font-semibold text-left text-slate-700 lg:table-cell">Clients</th>
-                <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Statut</th>
-                <th className="px-4 py-3 text-sm font-semibold text-right text-slate-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-4">
-                    <div className="flex items-center">
-                      <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-3 bg-blue-100 rounded-full">
-                        <span className="font-semibold text-blue-600">{user.fullName.charAt(0)}</span>
+        {isLoadingUsers && (
+          <p className="text-slate-600">Loading users...</p>
+        )}
+
+        {isErrorUsers && (
+          <div className="mb-4 text-red-600">
+            <p>Failed to load users.</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-3 py-1 mt-2 text-white bg-red-600 rounded hover:bg-red-700"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!isLoadingUsers && !isErrorUsers && (
+          <>
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Nom</th>
+                    <th className="px-4 py-3 text-sm font-semibold text-left text-slate-700">Email</th>
+                    <th className="hidden px-4 py-3 text-sm font-semibold text-left text-slate-700 lg:table-cell">Rôle</th>
+                    <th className="px-4 py-3 text-sm font-semibold text-right text-slate-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers?.map((user) => (
+                    <tr key={user._id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center">
+                          <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-3 bg-blue-100 rounded-full">
+                            <span className="font-semibold text-blue-600">{user.name.charAt(0)}</span>
+                          </div>
+                          <span className="text-sm font-medium truncate text-slate-900">{user.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm truncate text-slate-600">{user.email}</td>
+                      <td className="hidden px-4 py-4 text-sm lg:table-cell">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {user.role === 'admin' ? 'Admin' : 'Employé'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex justify-end space-x-2">
+                          <button onClick={() => handleOpenModal(user)} className="p-2 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(user._id)} className="p-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="space-y-4 md:hidden">
+              {filteredUsers?.map((user) => (
+                <div key={user._id} className="p-4 border rounded-lg bg-slate-50 border-slate-200">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center flex-1">
+                      <div className="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-full">
+                        <span className="font-semibold text-blue-600">{user.name.charAt(0)}</span>
                       </div>
-                      <span className="text-sm font-medium truncate text-slate-900">{user.fullName}</span>
+                      <div>
+                        <p className="font-semibold text-slate-900">{user.name}</p>
+                        <p className="text-sm text-slate-600">{user.email}</p>
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-4 py-4 text-sm truncate text-slate-600">{user.email}</td>
-                  <td className="hidden px-4 py-4 text-sm lg:table-cell">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {user.role === 'admin' ? 'Admin' : 'Employé'}
-                    </span>
-                  </td>
-                  <td className="hidden px-4 py-4 text-sm text-slate-600 lg:table-cell">{user.clientsManaged}</td>
-                  <td className="px-4 py-4">
-                    <button
-                      onClick={() => handleToggleStatus(user.id)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {user.status === 'active' ? 'Actif' : 'Inactif'}
-                    </button>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex justify-end space-x-2">
-                      <button onClick={() => handleOpenModal(user)} className="p-2 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50">
+                    <div className="flex space-x-2">
+                      <button onClick={() => handleOpenModal(user)} className="p-2 text-slate-600 hover:text-blue-600">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(user.id)} className="p-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50">
+                      <button onClick={() => handleDelete(user._id)} className="p-2 text-slate-600 hover:text-red-600">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="space-y-2">
+                      <div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {user.role === 'admin' ? 'Admin' : 'Employé'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="space-y-4 md:hidden">
-          {filteredUsers.map((user) => (
-            <div key={user.id} className="p-4 border rounded-lg bg-slate-50 border-slate-200">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center flex-1">
-                  <div className="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-full">
-                    <span className="font-semibold text-blue-600">{user.fullName.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-900">{user.fullName}</p>
-                    <p className="text-sm text-slate-600">{user.email}</p>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button onClick={() => handleOpenModal(user)} className="p-2 text-slate-600 hover:text-blue-600">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleDelete(user.id)} className="p-2 text-slate-600 hover:text-red-600">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <div className="space-y-2">
-                  <div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {user.role === 'admin' ? 'Admin' : 'Employé'}
-                    </span>
-                  </div>
-                  <div className="text-slate-600">Clients: {user.clientsManaged}</div>
-                </div>
-                <button
-                  onClick={() => handleToggleStatus(user.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {user.status === 'active' ? 'Actif' : 'Inactif'}
-                </button>
-              </div>
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
 
       {showModal && (
@@ -210,13 +234,22 @@ export default function Users() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {(isCreateUserError || isUpdateUserError) && showError && (
+                <div className="flex items-center gap-2 px-3 py-2 mt-2 text-sm text-red-600 border border-red-200 rounded-lg bg-red-50">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856A2 2 0 0020 17.09L13.947 4.911a2 2 0 00-3.894 0L4 17.09A2 2 0 005.062 19z" />
+                  </svg>
+                  <span>Un problème est survenu, merci de réessayer</span>
+                </div>
+              )}
+
               <div>
                 <label className="block mb-1 text-sm font-medium text-slate-700">Nom complet</label>
                 <input
                   type="text"
                   required
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -231,6 +264,17 @@ export default function Users() {
                 />
               </div>
               <div>
+                <label className="block mb-1 text-sm font-medium text-slate-700">Mot de passe</label>
+                <input
+                  type="password"
+                  required={!editingId}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
                 <label className="block mb-1 text-sm font-medium text-slate-700">Rôle</label>
                 <select
                   value={formData.role}
@@ -241,6 +285,7 @@ export default function Users() {
                   <option value="admin">Administrateur</option>
                 </select>
               </div>
+
               <div className="flex flex-col justify-end gap-3 mt-6 sm:flex-row">
                 <button
                   type="button"
@@ -252,8 +297,15 @@ export default function Users() {
                 <button
                   type="submit"
                   className="order-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 sm:order-2"
+                  disabled={isCreatingUser || isUpdatingUser}
                 >
-                  {editingId ? 'Modifier' : 'Ajouter'}
+                  {editingId
+                    ? isUpdatingUser
+                      ? 'Mise à jour...'
+                      : 'Modifier'
+                    : isCreatingUser
+                      ? 'Ajout...'
+                      : 'Ajouter'}
                 </button>
               </div>
             </form>
