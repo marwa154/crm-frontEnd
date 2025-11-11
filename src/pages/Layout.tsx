@@ -20,7 +20,7 @@ export default function Layout({ children }: LayoutProps) {
     { id: 'notifications', label: 'Notifications', icon: '🔔' },
     ...(userRole === 'admin' ? [
       { id: 'users', label: 'Utilisateurs', icon: '👤' },
-      { id: 'logs', label: 'Journalisation', icon: '📋' },
+      { id: 'Logs', label: 'Journalisation', icon: '📋' },
     ] : []),
   ];
 const onLogout=()=>{

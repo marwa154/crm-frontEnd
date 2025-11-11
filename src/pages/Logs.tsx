@@ -1,146 +1,137 @@
-import { useState } from 'react';
-import { Search, Download, Filter } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Search, Download } from 'lucide-react';
+import axios from 'axios';
 
 interface LogEntry {
-  id: number;
-  action: string;
-  user: string;
-  target: string;
-  timestamp: string;
-  details: string;
-  type: 'create' | 'update' | 'delete' | 'login' | 'export';
+  _id: string;
+  userId: any;
+  name: any;
+  typeAction: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'EXPORT';
+  module: string;
+  targetId: string;
+  description: string;
+  newValue?: any;
+  dateAction: string;
 }
 
 export default function Logs() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [actionFilter, setActionFilter] = useState('all');
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const token = localStorage.getItem('token');
 
-  const logs: LogEntry[] = [
-    { id: 1, action: 'Connexion', user: 'admin@crm.com', target: 'Système', timestamp: '2025-11-04 14:30', details: 'Connexion réussie', type: 'login' },
-    { id: 2, action: 'Ajout client', user: 'jean.dupont@crm.com', target: 'Jean Dupont (Société ABC)', timestamp: '2025-11-04 13:45', details: 'Nouveau client créé', type: 'create' },
-    { id: 3, action: 'Modification client', user: 'marie.martin@crm.com', target: 'Marie Martin (Entreprise XYZ)', timestamp: '2025-11-04 12:20', details: 'Mise à jour des informations', type: 'update' },
-    { id: 4, action: 'Création facture', user: 'jean.dupont@crm.com', target: 'FAC-001 (€5,200)', timestamp: '2025-11-04 11:15', details: 'Nouvelle facture générée', type: 'create' },
-    { id: 5, action: 'Suppression devis', user: 'marie.martin@crm.com', target: 'Devis #003', timestamp: '2025-11-04 10:30', details: 'Devis supprimé du système', type: 'delete' },
-    { id: 6, action: 'Export données', user: 'admin@crm.com', target: 'Clients (CSV)', timestamp: '2025-11-03 16:45', details: 'Export de 12 clients', type: 'export' },
-    { id: 7, action: 'Connexion', user: 'marie.martin@crm.com', target: 'Système', timestamp: '2025-11-03 09:00', details: 'Connexion réussie', type: 'login' },
-    { id: 8, action: 'Modification facture', user: 'jean.dupont@crm.com', target: 'FAC-002 (€8,450)', timestamp: '2025-11-02 15:20', details: 'Statut changé en payée', type: 'update' },
-  ];
+  const fetchLogs = async (token: string) => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/jounalisation/getall', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { t: Date.now() },
+      });
+     
+      return res.data;
+    } catch (err) {
+      console.error('Erreur récupération logs:', err);
+      return [];
+    }
+  };
 
-  const filteredLogs = logs.filter(log => {
-    const matchesSearch = log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.target.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = actionFilter === 'all' || log.type === actionFilter;
-    return matchesSearch && matchesFilter;
-  });
+  useEffect(() => {
+    if (!token) return;
+    fetchLogs(token).then((data) => setLogs(data));
+  }, [token]);
+
+ const filteredLogs = logs.filter((log) => {
+  // Récupérer le nom de l'utilisateur si userId est un objet, sinon utiliser l'ID
+  const userName = typeof log.userId === 'object' ? log.userId.name : log.userId;
+  const term = searchTerm.toLowerCase();
+
+  return (
+    userName?.toLowerCase().includes(term) ||
+    log.description.toLowerCase().includes(term) ||
+    log.module.toLowerCase().includes(term)
+  );
+});
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'create': return 'bg-green-100 text-green-700';
-      case 'update': return 'bg-blue-100 text-blue-700';
-      case 'delete': return 'bg-red-100 text-red-700';
-      case 'login': return 'bg-amber-100 text-amber-700';
-      case 'export': return 'bg-purple-100 text-purple-700';
+      case 'CREATE': return 'bg-green-100 text-green-700';
+      case 'UPDATE': return 'bg-blue-100 text-blue-700';
+      case 'DELETE': return 'bg-red-100 text-red-700';
+      case 'LOGIN': return 'bg-amber-100 text-amber-700';
+      case 'EXPORT': return 'bg-purple-100 text-purple-700';
       default: return 'bg-slate-100 text-slate-700';
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'create': return 'Création';
-      case 'update': return 'Modification';
-      case 'delete': return 'Suppression';
-      case 'login': return 'Connexion';
-      case 'export': return 'Export';
+      case 'CREATE': return 'Création';
+      case 'UPDATE': return 'Modification';
+      case 'DELETE': return 'Suppression';
+      case 'LOGIN': return 'Connexion';
+      case 'EXPORT': return 'Export';
       default: return type;
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-        <h2 className="text-2xl font-bold text-slate-900">Journalisation (Logs)</h2>
-        <button className="w-full sm:w-auto flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <Download className="w-5 h-5 mr-2" />
-          Exporter les logs
-        </button>
-      </div>
-
-      <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200">
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-700">Journal des actions</h1>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Rechercher dans les logs..."
+              placeholder="Rechercher..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="pl-8 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
             />
           </div>
-          <select
-            value={actionFilter}
-            onChange={(e) => setActionFilter(e.target.value)}
-            className="px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">Tous les types</option>
-            <option value="create">Création</option>
-            <option value="update">Modification</option>
-            <option value="delete">Suppression</option>
-            <option value="login">Connexion</option>
-            <option value="export">Export</option>
-          </select>
+          <button className="bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+            <Download size={18} />
+            Exporter
+          </button>
         </div>
+      </div>
 
-        <div className="overflow-x-auto hidden md:block">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Date/Heure</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Action</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 hidden lg:table-cell">Utilisateur</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Cible</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 hidden lg:table-cell">Détails</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="py-4 px-4 text-sm text-slate-600 whitespace-nowrap">{log.timestamp}</td>
-                  <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(log.type)}`}>
-                      {getTypeLabel(log.type)}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-3 px-4 text-left">Utilisateur</th>
+              <th className="py-3 px-4 text-left">Module</th>
+              <th className="py-3 px-4 text-left">Type</th>
+              <th className="py-3 px-4 text-left">Description</th>
+              <th className="py-3 px-4 text-left">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredLogs.length > 0 ? (
+              filteredLogs.map((log) => (
+                <tr key={log._id} className="border-b hover:bg-gray-50">
+                  <td className="py-3 px-4">{typeof log.userId === 'object' ? log.userId.name : log.userId}</td>
+                    
+                  <td className="py-3 px-4">{log.module}</td>
+                  <td className="py-3 px-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(log.typeAction)}`}>
+                      {getTypeLabel(log.typeAction)}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm text-slate-700 hidden lg:table-cell truncate">{log.user}</td>
-                  <td className="py-4 px-4 text-sm text-slate-700 truncate">{log.target}</td>
-                  <td className="py-4 px-4 text-sm text-slate-600 hidden lg:table-cell">{log.details}</td>
+                  <td className="py-3 px-4">{log.description}</td>
+                  <td className="py-3 px-4 text-gray-500">
+                    {new Date(log.dateAction).toLocaleString()}
+                  </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="md:hidden space-y-4">
-          {filteredLogs.map((log) => (
-            <div key={log.id} className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{log.action}</p>
-                  <p className="text-xs text-slate-600 mt-1">{log.timestamp}</p>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getTypeColor(log.type)}`}>
-                  {getTypeLabel(log.type)}
-                </span>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div><span className="font-medium text-slate-700">Utilisateur:</span> <span className="text-slate-600">{log.user}</span></div>
-                <div><span className="font-medium text-slate-700">Cible:</span> <span className="text-slate-600">{log.target}</span></div>
-                <div><span className="font-medium text-slate-700">Détails:</span> <span className="text-slate-600">{log.details}</span></div>
-              </div>
-            </div>
-          ))}
-        </div>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="text-center py-6 text-gray-500">
+                  Aucun log trouvé.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

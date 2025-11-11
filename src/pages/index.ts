@@ -2,11 +2,16 @@ import Auth from "../pages/Auth";
 import Dashboard from "../pages/Dashboard";
 import Clients from "../pages/Clients";
 import Quotes from "../pages/Quotes";
+
 import Invoices from "../pages/Invoices";
 import Notifications from "../pages/Notifications";
 import Users from "../pages/Users";
 import Logs from "../pages/Logs";
+
 import AccessDenied from "../pages/AccessDenied";
+import QuoteForm from "./createQuotes";
+import InvoiceForm from "./createInvoices";
+
 
 export const PublicScreens = {
   Login: Auth,
@@ -18,7 +23,10 @@ export const PrivateScreens = {
   Clients,
   Quotes,
   Invoices,
+  QuoteForm ,
+  InvoiceForm,
   Notifications,
+
 };
 
 export const AdminScreens = {

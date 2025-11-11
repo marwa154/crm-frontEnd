@@ -87,7 +87,7 @@ export default function AppRouter() {
       ),
     },
     {
-      path: AdminPaths.logs,
+      path: AdminPaths.Logs,
       element: (
         <AdminGuard>
           <Layout>
@@ -96,6 +96,28 @@ export default function AppRouter() {
         </AdminGuard>
       ),
     },
+  {
+  path: PrivatePaths.createQuotes,
+  element: (
+    <AdminGuard>
+      <Layout>
+        <PrivateScreens.QuoteForm />
+      </Layout>
+    </AdminGuard>
+  ),
+},
+
+  {
+  path: PrivatePaths.createInvoices,
+  element: (
+    <AdminGuard>
+      <Layout>
+        <PrivateScreens.InvoiceForm />
+      </Layout>
+    </AdminGuard>
+  ),
+},
+
 
     {
       path: FallbackPaths.notFound,
