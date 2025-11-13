@@ -5,5 +5,7 @@ export const useClients = () => {
   return useQuery({
     queryKey: ["clients"],
     queryFn: getClients,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 };
