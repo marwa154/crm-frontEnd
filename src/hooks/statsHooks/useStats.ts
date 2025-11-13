@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { getUsers } from "../../api/userService";
+import { getStats } from "../../api/statsService";
 
-export const useUsers = () => {
+export const useStats = () => {
   return useQuery({
-    queryKey: ["users"],
-    queryFn: getUsers,
+    queryKey: ["stats"],
+    queryFn: getStats,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });

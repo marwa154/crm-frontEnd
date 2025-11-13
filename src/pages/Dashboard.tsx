@@ -1,66 +1,74 @@
+
 import { TrendingUp, Users, FileText, DollarSign } from 'lucide-react';
+import { useStats } from '../hooks/statsHooks/useStats';
+import { useDevis } from '../hooks/devisHooks/useDevis';
 
 export default function Dashboard() {
+  const { data: statsNumber } = useStats()
+  const { data: devis } = useDevis()
   const stats = [
-    { label: 'Total Clients', value: '248', change: '+12%', icon: Users, color: 'blue' },
-    { label: 'Devis en cours', value: '32', change: '+5%', icon: FileText, color: 'amber' },
-    { label: 'Factures payées', value: '156', change: '+23%', icon: DollarSign, color: 'green' },
-    { label: 'Revenus totaux', value: '€245,890', change: '+18%', icon: TrendingUp, color: 'violet' },
-  ];
-
-  const recentQuotes = [
-    { id: '001', client: 'Société ABC', amount: '€5,200', status: 'Envoyé', date: '2025-11-03' },
-    { id: '002', client: 'Entreprise XYZ', amount: '€8,450', status: 'Accepté', date: '2025-11-02' },
-    { id: '003', client: 'Tech Solutions', amount: '€3,100', status: 'Brouillon', date: '2025-11-01' },
+    { label: 'Total Clients', value: statsNumber?.totalClients, change: statsNumber?.evolution?.clients, icon: Users, color: 'blue' },
+    { label: 'Devis accepté', value: statsNumber?.devisAcceptes, change: statsNumber?.evolution?.devis, icon: FileText, color: 'amber' },
+    { label: 'Factures payées', value: statsNumber?.facturesPayees, change: statsNumber?.evolution?.factures, icon: DollarSign, color: 'green' },
+    { label: 'Revenus totaux', value: `${statsNumber?.revenusTotaux}Dt`, change: statsNumber?.evolution?.revenus, icon: TrendingUp, color: 'violet' },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Accepté': return 'bg-green-100 text-green-700';
-      case 'Envoyé': return 'bg-blue-100 text-blue-700';
-      case 'Brouillon': return 'bg-slate-100 text-slate-700';
+      case 'accepté': return 'bg-green-100 text-green-700';
+      case 'envoyé': return 'bg-blue-100 text-blue-700';
+      case 'brouillon': return 'bg-slate-100 text-slate-700';
+      case 'refusé': return 'bg-red-100 text-red-700 border-red-200';
       default: return 'bg-slate-100 text-slate-700';
     }
   };
 
+
+  const totalVentesAnnee = statsNumber?.ventesMensuelles?.reduce((sum:number, mois:any) => sum + mois.total, 0) || 0;
+  const ventesAvecPourcentage = statsNumber?.ventesMensuelles?.map((mois:any )=> ({
+    ...mois,
+    pourcentage: totalVentesAnnee > 0 ? (mois.total / totalVentesAnnee) * 100 : 0
+  })) || [];
+
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-slate-900">Tableau de bord</h2>
-        <select className="px-4 py-2 border border-slate-300 rounded-lg text-sm">
+        <select className="px-4 py-2 text-sm border rounded-lg border-slate-300">
           <option>Ce mois</option>
           <option>Cette semaine</option>
           <option>Aujourd'hui</option>
         </select>
-      </div>
+      </div> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {stats?.map((stat) => (
+          <div key={stat.label} className="p-6 bg-white border shadow-sm rounded-xl border-slate-200">
             <div className="flex items-center justify-between mb-4">
               <div className={`p-3 bg-${stat.color}-100 rounded-lg`}>
                 <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
               </div>
               <span className="text-sm font-medium text-green-600">{stat.change}</span>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-1">{stat.value}</h3>
+            <h3 className="mb-1 text-2xl font-bold text-slate-900">{stat.value}</h3>
             <p className="text-sm text-slate-600">{stat.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Devis récents</h3>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="p-6 bg-white border shadow-sm rounded-xl border-slate-200">
+          <h3 className="mb-4 text-lg font-semibold text-slate-900">Devis récents</h3>
           <div className="space-y-3">
-            {recentQuotes.map((quote) => (
-              <div key={quote.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+            {devis?.slice(0, 5).map((quote) => (
+              <div key={quote._id} className="flex items-center justify-between p-4 rounded-lg bg-slate-50">
                 <div>
-                  <p className="font-medium text-slate-900">{quote.client}</p>
-                  <p className="text-sm text-slate-600">Devis #{quote.id} - {quote.date}</p>
+                  <p className="font-medium text-slate-900">{quote.clientId.fullName}</p>
+                  <p className="text-sm text-slate-600">{quote.codeUnique} - {quote.createdAt.split("T")[0]}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-slate-900 mb-1">{quote.amount}</p>
+                  <p className="mb-1 font-semibold text-slate-900">{quote.totalHT}Dt</p>
                   <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getStatusColor(quote.status)}`}>
                     {quote.status}
                   </span>
@@ -70,13 +78,14 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Ventes mensuelles</h3>
-          <div className="h-64 flex items-end justify-between space-x-2">
-            {[65, 45, 78, 52, 88, 72, 95, 60, 85, 70, 92, 80].map((height, i) => (
-              <div key={i} className="flex-1 bg-blue-500 rounded-t hover:bg-blue-600 transition-colors cursor-pointer"
-                   style={{ height: `${height}%` }}
-                   title={`Mois ${i + 1}`}
+        <div className="p-6 bg-white border shadow-sm rounded-xl border-slate-200">
+          <h3 className="mb-4 text-lg font-semibold text-slate-900">Ventes mensuelles</h3>
+          <div className="flex items-end justify-between h-64 space-x-2">
+            {ventesAvecPourcentage?.map((v:any, i:number) => (
+              <div key={i} className="flex-1 transition-colors bg-blue-500 rounded-t cursor-pointer hover:bg-blue-600"
+                style={{ height: `${v.pourcentage}%` }}
+                title={`Mois ${v.nomMois
+                  }: ${v.total}Dt`}
               />
             ))}
           </div>

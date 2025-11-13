@@ -189,25 +189,7 @@ const generateInvoicePDF = (invoice: any) => {
     fetchFactures();
   }, []);
 
-  // 🔹 Ouvrir le modal
-  const handleOpenModal = (facture?: Facture) => {
-    if (facture) {
-      setFormData(facture);
-      setEditingFacture(facture);
-    } else {
-      setFormData({
-        invoiceNumber: `FAC-${Date.now()}`,
-        clientId: "",
-        dueDate: "",
-        tva: 19,
-        lignes: [{ description: "", quantite: 1, prixUnitaire: 0, totalLigne: 0 }],
-        status: "non payée",
-        description: "",
-      });
-      setEditingFacture(null);
-    }
-    setShowModal(true);
-  };
+  
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -274,12 +256,12 @@ const filteredFactures = factures.filter((f) => {
   return (
     <div className="space-y-6">
       {/* HEADER */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-slate-900">Factures</h2>
         <button
          onClick={() => navigate("/createInvoices", { state: { mode: "new" } })}
 
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           <Plus className="w-5 h-5 mr-2" />
           Nouvelle facture
@@ -287,9 +269,9 @@ const filteredFactures = factures.filter((f) => {
       </div>
 
       {/* SEARCH BAR */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+      <div className="p-4 bg-white border shadow-sm rounded-xl border-slate-200">
         <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+          <Search className="absolute w-5 h-5 transform -translate-y-1/2 left-3 top-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Rechercher une facture..."
@@ -303,19 +285,19 @@ const filteredFactures = factures.filter((f) => {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200">
-              <th className="text-left py-2 px-3">Numéro</th>
-              <th className="text-left py-2 px-3">Client</th>
-              <th className="text-left py-2 px-3">Date</th>
-              <th className="text-left py-2 px-3">Total TTC</th>
-              <th className="text-left py-2 px-3">Statut</th>
-              <th className="text-right py-2 px-3">Actions</th>
+              <th className="px-3 py-2 text-left">Numéro</th>
+              <th className="px-3 py-2 text-left">Client</th>
+              <th className="px-3 py-2 text-left">Date</th>
+              <th className="px-3 py-2 text-left">Total TTC</th>
+              <th className="px-3 py-2 text-left">Statut</th>
+              <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredFactures.map((f) => (
               <tr key={f._id} className="border-b border-slate-100 hover:bg-slate-50">
-                <td className="py-3 px-3">{f.invoiceNumber}</td>
-             <td className="py-3 px-3">
+                <td className="px-3 py-3">{f.invoiceNumber}</td>
+             <td className="px-3 py-3">
   {typeof f.clientId === "object"
     ? `${f.clientId.fullName} (${f.clientId.company})`
     : f.clientId}
@@ -342,13 +324,13 @@ const filteredFactures = factures.filter((f) => {
 </button>
                   <button
                      onClick={() => navigate("/createInvoices", { state: { facture: f } })}
-                    className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                    className="p-2 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(f._id!)}
-                    className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                    className="p-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
