@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Plus } from "lucide-react";
 
 interface Ligne {
   description: string;
@@ -65,44 +66,50 @@ export default function CreateInvoice() {
 
   // 🔹 Pré-remplir les champs selon le contexte
   useEffect(() => {
-    if (existingFacture) {
-      // Modification facture
-      setFormData({
-        ...existingFacture,
-        dueDate: existingFacture.dueDate?.slice(0, 10) || new Date().toISOString().slice(0, 10),
-      });
-    } else if (devisFromState) {
-      // Création depuis un devis
-      setFormData({
-        invoiceNumber: `FAC-${Date.now()}`,
-        clientId: devisFromState.clientId?._id || "",
-        userId: devisFromState.userId?._id || "",
-        devisId: devisFromState._id || "",
-        dueDate: new Date().toISOString().slice(0, 10),
-        tva: devisFromState.tva ?? 19,
-        totalHT: devisFromState.totalHT ?? 0,
-        totalTTC: devisFromState.totalTTC ?? 0,
-        lignes: devisFromState.lignes || [],
-        status: "Non payée",
-        description: devisFromState.description || "",
-      });
-    } else if (isNewInvoice) {
-      // Création manuelle sans devis
-      setFormData({
-        invoiceNumber: `FAC-${Date.now()}`,
-        clientId: "",
-        userId: "",
-        devisId: "",
-        dueDate: new Date().toISOString().slice(0, 10),
-        tva: 19,
-        totalHT: 0,
-        totalTTC: 0,
-        lignes: [{ description: "", quantite: 1, prixUnitaire: 0, totalLigne: 0 }],
-        status: "Non payée",
-        description: "",
-      });
-    }
-  }, [existingFacture, devisFromState, isNewInvoice]);
+  if (existingFacture) {
+    // Modification facture
+    setFormData({
+      ...existingFacture,
+      clientId: existingFacture.clientId?._id || existingFacture.clientId,
+      userId: existingFacture.userId?._id || existingFacture.userId,
+      devisId: existingFacture.devisId?._id || existingFacture.devisId || "",
+      dueDate: existingFacture.dueDate?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+      lignes: existingFacture.lignes || [],
+
+        description: existingFacture.description || "",
+    });
+  } else if (devisFromState) {
+    // Création depuis un devis
+    setFormData({
+      invoiceNumber: `FAC-${Date.now()}`,
+      clientId: devisFromState.clientId?._id || "",
+      userId: devisFromState.userId?._id || "",
+      devisId: devisFromState._id || "",
+      dueDate: new Date().toISOString().slice(0, 10),
+      tva: devisFromState.tva ?? 19,
+      totalHT: devisFromState.totalHT ?? 0,
+      totalTTC: devisFromState.totalTTC ?? 0,
+      lignes: devisFromState.lignes || [],
+      status: "Non payée",
+      description: devisFromState.description || "",
+    });
+  } else if (isNewInvoice) {
+    // Création manuelle
+    setFormData({
+      invoiceNumber: `FAC-${Date.now()}`,
+      clientId: "",
+      userId: "",
+      devisId: "",
+      dueDate: new Date().toISOString().slice(0, 10),
+      tva: 19,
+      totalHT: 0,
+      totalTTC: 0,
+      lignes: [{ description: "", quantite: 1, prixUnitaire: 0, totalLigne: 0 }],
+      status: "Non payée",
+      description: "",
+    });
+  }
+}, [existingFacture, devisFromState, isNewInvoice]);
 
   // 🔹 Calcul automatique du total HT/TTC
   useEffect(() => {
@@ -148,6 +155,7 @@ export default function CreateInvoice() {
     userId: userId,           // indispensable
     devisId: formData.devisId || undefined, // undefined si pas de devis
     lignes,
+    description: formData.description,
   };
 
   try {
@@ -176,9 +184,10 @@ export default function CreateInvoice() {
       </h2>
 
       {/* Client */}
-      <div>
+      <div >
         <label className="block mb-1 font-medium">Client *</label>
         <select
+          disabled={existingFacture || devisFromState}
           value={formData.clientId}
           onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
           className="w-full p-2 border rounded"
@@ -194,7 +203,7 @@ export default function CreateInvoice() {
       </div>
 
       {/* Devis */}
-      {!isNewInvoice && (
+      {!isNewInvoice && formData.devisId && (
         <div>
           <label className="block mb-1 font-medium">Devis associé</label>
           <input type="text"   value={devisFromState?.codeUnique  || ""} disabled className="w-full p-2 border rounded" />
@@ -248,11 +257,15 @@ export default function CreateInvoice() {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-end">
         {!existingFacture && !devisFromState && (
-          <button type="button" onClick={addLine} className="px-3 py-1 bg-blue-500 text-white rounded">
-            Ajouter une ligne
+          <button type="button" 
+          onClick={addLine}   
+            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+         <Plus size={18} />      Ajouter une ligne
           </button>
         )}
+        </div>
       </div>
 
       {/* Description et statut */}
@@ -276,10 +289,15 @@ export default function CreateInvoice() {
           <option value="Payée">Payée</option>
         </select>
       </div>
-
-      <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-        {existingFacture ? "Mettre à jour" : "Créer la facture"}
+       <button type="submit" 
+      
+   className="flex justify-end flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-bleu-700"
+      >
+       
+          {existingFacture ? "Mettre à jour" : "Créer la facture"}
       </button>
+
+     
     </form>
   );
 }
