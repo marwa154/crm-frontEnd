@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Search, Plus, Edit, Trash2, X } from "lucide-react";
+import { Search, Plus, Edit, Trash2, X, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+  import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface Ligne {
   description: string;
@@ -57,6 +59,132 @@ export default function Factures() {
     }
   };
 
+
+
+const generateInvoicePDF = (invoice: any) => {
+  const doc = new jsPDF();
+
+  // 🎨 Couleurs du thème
+  const primaryColor: [number, number, number] = [41, 128, 185]; // bleu
+  const accentColor: [number, number, number] = [243, 156, 18]; // orange
+  const textColor: [number, number, number] = [44, 62, 80];
+  const lightGray: [number, number, number] = [236, 240, 241];
+
+  // 🧾 Titre
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(...primaryColor);
+  doc.text("FACTURE", 105, 20, { align: "center" });
+
+  doc.setFontSize(10);
+  doc.setTextColor(...textColor);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Numéro : ${invoice.invoiceNumber}`, 105, 28, { align: "center" });
+
+  // 🧍 ENTREPRISE (ÉMETTEUR)
+  doc.setFillColor(...lightGray);
+  doc.rect(14, 35, 90, 35, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("ÉMETTEUR", 16, 42);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  let y = 48;
+  if (invoice.userId?.name) {
+    doc.text(invoice.userId.name, 16, y);
+    y += 5;
+  }
+  if (invoice.userId?.email) {
+    doc.text(`Email: ${invoice.userId.email}`, 16, y);
+  }
+
+  // 👤 CLIENT
+  doc.setFillColor(...lightGray);
+  doc.rect(110, 35, 90, 35, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("CLIENT", 112, 42);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  y = 48;
+  doc.text(invoice.clientId?.fullName || "Nom inconnu", 112, y);
+  y += 5;
+  if (invoice.clientId?.company)
+    doc.text(`Entreprise : ${invoice.clientId.company}`, 112, y);
+  y += 5;
+  doc.text(`Date : ${new Date(invoice.invoiceDate).toLocaleDateString("fr-FR")}`, 112, y);
+  y += 5;
+  doc.text(`Statut : ${invoice.status}`, 112, y);
+
+  // 📋 Tableau des produits / services
+  const tableStartY = 80;
+  const tableData =
+    invoice.lignes && invoice.lignes.length > 0
+      ? invoice.lignes.map((ligne: any) => [
+          ligne.description || "—",
+          ligne.quantite || 1,
+          ligne.prixUnitaire?.toFixed(2) || "0.00",
+          ligne.totalLigne?.toFixed(2) || "0.00",
+        ])
+      : [["Aucune ligne", "", "", ""]];
+
+  autoTable(doc, {
+    startY: tableStartY,
+    head: [["Description", "Quantité", "Prix Unitaire (DT)", "Total (DT)"]],
+    body: tableData,
+    theme: "striped",
+    headStyles: {
+      fillColor: primaryColor,
+      textColor: [255, 255, 255],
+      fontSize: 10,
+      fontStyle: "bold",
+      halign: "center",
+    },
+    styles: {
+      fontSize: 9,
+      cellPadding: 4,
+      textColor: textColor,
+    },
+    alternateRowStyles: {
+      fillColor: [250, 250, 250],
+    },
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
+
+  // 💰 Totaux
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(...accentColor);
+  doc.text("TOTAL TTC :", 130, finalY);
+  doc.text(`${invoice.totalTTC?.toFixed(2)} DT`, 195, finalY, { align: "right" });
+
+  // 🖋️ Signature
+  const signatureY = Math.max(finalY + 40, 240);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(...textColor);
+  doc.text("Signature client :", 14, signatureY);
+  doc.line(14, signatureY + 2, 80, signatureY + 2);
+  doc.text("Signature entreprise :", 130, signatureY);
+  doc.line(130, signatureY + 2, 196, signatureY + 2);
+
+  // 📄 Pied de page
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text(
+    "Ce document est une facture générée automatiquement et ne peut être modifié après validation.",
+    105,
+    285,
+    { align: "center" }
+  );
+
+  doc.save(`Facture_${invoice.invoiceNumber}.pdf`);
+};
+
+
   useEffect(() => {
     fetchFactures();
   }, []);
@@ -102,11 +230,28 @@ export default function Factures() {
   };
 
   // 🔹 Filtrer les factures
-  const filteredFactures = factures.filter(
-    (f) =>
-      f.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      f.status.toLowerCase().includes(searchTerm.toLowerCase())
+  // 🔹 Filtrer les factures
+const filteredFactures = factures.filter((f) => {
+  const clientName =
+    typeof f.clientId === "object" ? f.clientId.fullName.toLowerCase() : "";
+  const invoiceNumber = f.invoiceNumber?.toLowerCase() || "";
+  const status = f.status?.toLowerCase() || "";
+  const totalTTC = f.totalTTC ? f.totalTTC.toString() : "";
+  // Convertir la date en string locale (ex: "12/11/2025")
+  const invoiceDate = f.invoiceDate
+    ? new Date(f.invoiceDate).toLocaleDateString("fr-FR")
+    : "";
+
+  // Vérifier si le terme de recherche correspond à l’un des champs
+  return (
+    clientName.includes(searchTerm.toLowerCase()) ||
+    invoiceNumber.includes(searchTerm.toLowerCase()) ||
+    invoiceDate.includes(searchTerm.toLowerCase()) || // 🔹 recherche par date
+    status.includes(searchTerm.toLowerCase()) ||
+       totalTTC.includes(searchTerm)
   );
+});
+
 
   return (
     <div className="space-y-6">
@@ -158,10 +303,25 @@ export default function Factures() {
     : f.clientId}
 </td>
 
-                <td className="px-3 py-3">{new Date(f.invoiceDate ?? "").toLocaleDateString()}</td>
-                <td className="px-3 py-3">{f.totalTTC.toFixed(2)} DT</td>
-                <td className="px-3 py-3 capitalize">{f.status}</td>
-                <td className="px-3 py-3 space-x-2 text-right">
+                <td className="py-3 px-3">{new Date(f.invoiceDate ?? "").toLocaleDateString()}</td>
+                <td className="py-3 px-3">{f.totalTTC.toFixed(2)} DT</td>
+                <td className="py-3 px-3 capitalize"><span
+    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+      f.status.toLowerCase() === "payée"
+        ? "bg-green-100 text-green-700"
+        : "bg-red-100 text-red-700"
+    }`}
+  >
+    {f.status}
+  </span></td>
+                <td className="py-3 px-3 text-right space-x-2">
+                  <button
+    onClick={() => generateInvoicePDF(f)}
+    className="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg"
+                    >
+                      <Download className="w-4 h-4" />
+
+</button>
                   <button
                      onClick={() => navigate("/createInvoices", { state: { facture: f } })}
                     className="p-2 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50"

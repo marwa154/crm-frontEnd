@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Search, Download } from 'lucide-react';
 import axios from 'axios';
+  import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 interface LogEntry {
   _id: string;
@@ -72,6 +74,37 @@ export default function Logs() {
     }
   };
 
+
+// ...
+
+const handleExport = () => {
+  if (filteredLogs.length === 0) {
+    alert("Aucun log à exporter !");
+    return;
+  }
+
+  // Transformer les logs en tableau simple
+  const exportData = filteredLogs.map((log) => ({
+    Utilisateur: typeof log.userId === "object" ? log.userId.name : log.userId,
+    Module: log.module,
+    Type: getTypeLabel(log.typeAction),
+    Description: log.description,
+    Date: new Date(log.dateAction).toLocaleString(),
+  }));
+
+  // Créer la feuille Excel
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
+
+  // Générer le fichier
+  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+
+  saveAs(blob, `logs_${new Date().toISOString().split("T")[0]}.xlsx`);
+};
+
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -87,7 +120,7 @@ export default function Logs() {
               className="pl-8 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
             />
           </div>
-          <button className="bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+          <button onClick={handleExport} className="bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
             <Download size={18} />
             Exporter
           </button>

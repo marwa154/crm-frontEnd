@@ -351,8 +351,12 @@ useEffect(() => {
         Total HT: {totalHT.toFixed(2)} DT
       </div>
 
-      <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-        Enregistrer le devis
+      <button type="submit" 
+      
+   className="flex justify-end flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-bleu-700"
+      >
+       
+        {quoteToEdit ? "Mettre à jour le devis" : " Enregistrer le devis"}
       </button>
     </form>
   );
