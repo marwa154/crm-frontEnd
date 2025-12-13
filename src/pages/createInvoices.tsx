@@ -31,10 +31,15 @@ export default function CreateInvoice() {
   const existingFacture = location.state?.facture || null;
   const devisFromState =   location.state?.quote|| null;
     const isNewInvoice = location.state?.mode === "new"; // true si on vient du bouton "Nouvelle facture"
-
+  
+    const randomPart = Math.floor(1000 + Math.random() * 9000); // nombre à 4 chiffres
+    const codeUnique = `FAC-${new Date().getFullYear()}-${randomPart}`;
   const [clients, setClients] = useState<any[]>([]);
   const [formData, setFormData] = useState<Facture>({
-    invoiceNumber: `FAC-${Date.now()}`,
+
+
+    
+    invoiceNumber: `${codeUnique}`,
     clientId: "",
     userId: "",
     devisId: "",
@@ -49,7 +54,6 @@ export default function CreateInvoice() {
 
   const token = localStorage.getItem("token");
 
-  // 🔹 Charger les clients depuis la base
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -64,10 +68,13 @@ export default function CreateInvoice() {
     fetchClients();
   }, [token]);
 
-  // 🔹 Pré-remplir les champs selon le contexte
+
   useEffect(() => {
   if (existingFacture) {
     // Modification facture
+
+
+    
     setFormData({
       ...existingFacture,
       clientId: existingFacture.clientId?._id || existingFacture.clientId,
@@ -79,9 +86,10 @@ export default function CreateInvoice() {
         description: existingFacture.description || "",
     });
   } else if (devisFromState) {
+    
     // Création depuis un devis
     setFormData({
-      invoiceNumber: `FAC-${Date.now()}`,
+      invoiceNumber: `${codeUnique}`,
       clientId: devisFromState.clientId?._id || "",
       userId: devisFromState.userId?._id || "",
       devisId: devisFromState._id || "",
@@ -94,9 +102,11 @@ export default function CreateInvoice() {
       description: devisFromState.description || "",
     });
   } else if (isNewInvoice) {
+
+
     // Création manuelle
     setFormData({
-      invoiceNumber: `FAC-${Date.now()}`,
+      invoiceNumber: `${codeUnique}`,
       clientId: "",
       userId: "",
       devisId: "",
@@ -111,14 +121,14 @@ export default function CreateInvoice() {
   }
 }, [existingFacture, devisFromState, isNewInvoice]);
 
-  // 🔹 Calcul automatique du total HT/TTC
+  //  Calcul automatique du total HT/TTC
   useEffect(() => {
     const totalHT = formData.lignes.reduce((sum, l) => sum + l.quantite * l.prixUnitaire, 0);
     const totalTTC = totalHT + (totalHT * formData.tva) / 100;
     setFormData((prev) => ({ ...prev, totalHT, totalTTC }));
   }, [formData.lignes, formData.tva]);
 
-  // 🔹 Gestion lignes
+  //  Gestion lignes
   const updateLine = (index: number, field: keyof Ligne, value: any) => {
     const newLines = [...formData.lignes];
     (newLines[index][field] as any) = value;
@@ -141,7 +151,12 @@ export default function CreateInvoice() {
   e.preventDefault();
 
   // Récupérer l'userId depuis le localStorage (stocké lors du login)
-  const userId = "690e6452d7037020f831e5f5";
+
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+const userId = user?._id;
+
+
 
   // Préparer les lignes
   const lignes = formData.lignes.map((l) => ({
@@ -203,12 +218,18 @@ export default function CreateInvoice() {
       </div>
 
       {/* Devis */}
-      {!isNewInvoice && formData.devisId && (
-        <div>
-          <label className="block mb-1 font-medium">Devis associé</label>
-          <input type="text"   value={devisFromState?.codeUnique  || ""} disabled className="w-full p-2 border rounded" />
-        </div>
-      )}
+     {existingFacture?.devisId && (
+  <div>
+    <label className="block mb-1 font-medium">Devis associé</label>
+    <input
+      type="text"
+      value={existingFacture.devisId.codeUnique}
+      disabled
+      className="w-full p-2 border rounded"
+    />
+  </div>
+)}
+
 
       {/* Lignes */}
       <div>

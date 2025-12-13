@@ -53,7 +53,7 @@ export default function Quotes() {
     const textColor: [number, number, number] = [44, 62, 80];
     const lightGray: [number, number, number] = [236, 240, 241];
 
-    // 🧾 Titre principal
+ 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.setTextColor(...primaryColor);
@@ -64,7 +64,7 @@ export default function Quotes() {
     doc.setFont('helvetica', 'normal');
     doc.text(`Code unique : ${quote.codeUnique}`, 105, 28, { align: 'center' });
 
-    // 🧍 ÉMETTEUR
+ 
     doc.setFillColor(...lightGray);
     doc.rect(14, 35, 90, 35, 'F');
     doc.setFont('helvetica', 'bold');
@@ -83,7 +83,7 @@ export default function Quotes() {
     doc.text(`Email: ${quote.userId.email}`, 16, y);
   } 
 
-    // 👤 CLIENT
+    //  CLIENT
     doc.setFillColor(...lightGray);
     doc.rect(110, 35, 90, 35, 'F');
     doc.setFont('helvetica', 'bold');
@@ -101,7 +101,7 @@ export default function Quotes() {
     y += 5;
     doc.text(`Date : ${new Date(quote.createdAt).toLocaleDateString('fr-FR')}`, 112, y);
 
-    // 📋 Tableau des montants
+    //  Tableau des montants
     const tableStartY = 80;
     autoTable(doc, {
       startY: tableStartY,
@@ -134,14 +134,14 @@ export default function Quotes() {
 
     const finalY = (doc as any).lastAutoTable.finalY + 10;
 
-    // 💰 Totaux
+    //  Totaux
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(...accentColor);
     doc.text('TOTAL TTC :', 130, finalY);
     doc.text(`${quote.totalTTC.toFixed(2)} DT`, 195, finalY, { align: 'right' });
 
-    // 🖋️ Signature
+    // Signature
     const signatureY = Math.max(finalY + 40, 240);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
@@ -151,7 +151,7 @@ export default function Quotes() {
     doc.text('Signature entreprise :', 130, signatureY);
     doc.line(130, signatureY + 2, 196, signatureY + 2);
 
-    // 📄 Pied de page
+    // Pied de page
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text('Ce devis est généré automatiquement et reste valable jusqu’à sa validation.', 105, 285, { align: 'center' });
@@ -160,7 +160,7 @@ export default function Quotes() {
   };
 
 
-  // 🟢 Couleur des statuts
+  //  Couleur des statuts
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'accepté': return 'bg-green-100 text-green-700 border-green-200';
@@ -171,7 +171,7 @@ export default function Quotes() {
     }
   };
 
-  // 🟢 Récupérer tous les devis
+  //  Récupérer tous les devis
   useEffect(() => {
     const fetchQuotes = async () => {
       try {
@@ -225,7 +225,7 @@ export default function Quotes() {
     setEditingId(null);
   };
 
-  // 🟢 Création ou modification
+  //  Création ou modification
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {

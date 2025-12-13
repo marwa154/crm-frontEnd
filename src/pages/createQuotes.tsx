@@ -50,10 +50,6 @@ export default function QuoteForm() {
   const quoteToEdit: QuoteToEdit | undefined = location.state?.quoteToEdit;
 
 
-
-
-
-
   const [clients, setClients] = useState<Client[]>([]);
   const [clientSearch, setClientSearch] = useState('');
   const filteredClients = clients.filter(client =>
@@ -110,8 +106,10 @@ useEffect(() => {
 
   // Sélectionner le client si c'est un objet ou un string
   if (typeof quoteToEdit.clientId === "string") {
+   
     setSelectedClient(quoteToEdit.clientId);
   } else if (quoteToEdit.clientId?._id) {
+ 
     setSelectedClient(quoteToEdit.clientId._id);
   }
 
@@ -121,6 +119,7 @@ useEffect(() => {
   // Lignes du devis
   const quoteLines = quoteToEdit.lignes || [];
   if (quoteLines.length > 0) {
+    
     const mappedLines = quoteLines.map((line: any) => ({
       tempId: Date.now().toString() + Math.random(),
       description: line.description || "",
@@ -134,6 +133,7 @@ useEffect(() => {
     const total = mappedLines.reduce((sum, line) => sum + line.totalLigne, 0);
     setTotalHT(total);
   } else {
+    
     // Si pas de lignes, initialiser une ligne vide
     setLines([{ tempId: "1", description: "", quantite: 1, prixUnitaire: 0, totalLigne: 0 }]);
     setTotalHT(0);
@@ -142,18 +142,6 @@ useEffect(() => {
   // Status
   setStatus(quoteToEdit.status || "brouillon");
 }, [quoteToEdit, clients]);
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   const addLine = () => {
@@ -188,8 +176,11 @@ useEffect(() => {
     if (!selectedClient) return alert("Veuillez sélectionner un client.");
 
     try {
-      const token = localStorage.getItem("token");
-      const userId = "690e6452d7037020f831e5f5"; // Remplacer par l'ID réel de l'utilisateur
+        const token = localStorage.getItem("token");
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+const userId = user?._id;
       const devisData = {
         clientId: selectedClient,
         userId,
@@ -218,6 +209,7 @@ useEffect(() => {
         await axios.post("http://localhost:5000/api/devis/create", devisData, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
         alert("Devis créé avec succès !");
       }
 
