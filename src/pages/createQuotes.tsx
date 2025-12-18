@@ -92,10 +92,7 @@ const selectedOption = selectedClient
     fetchClients();
   }, []);
 
-  // Pré-remplir le formulaire si on édite un devis
  
-
-
 // Charger le quoteToEdit quand les clients sont prêts
 useEffect(() => {
   // Si pas de devis à éditer, rien à faire
@@ -221,8 +218,8 @@ const userId = user?._id;
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
-      <h2 className="text-2xl font-semibold mb-6 text-center">
+    <form onSubmit={handleSubmit} className="max-w-5xl p-6 mx-auto mt-10 bg-white shadow-md rounded-xl">
+      <h2 className="mb-6 text-2xl font-semibold text-center">
         {quoteToEdit ? "Modifier un devis" : "Créer un devis"}
       </h2>
 
@@ -243,17 +240,6 @@ const userId = user?._id;
       </div>
 
 
-
-
-
-
-
-
-
-
-
-
-
       {/* Description / Notes */}
       <div className="mb-4">
         <label className="block mb-1 font-medium text-gray-700">Description / Notes</label>
@@ -267,7 +253,7 @@ const userId = user?._id;
       </div>
 
       {/* Lignes */}
-      <div className="mb-4 flex justify-between items-center">
+      <div className="flex items-center justify-between mb-4">
         <div>Status:<select
   value={status}
   onChange={(e) => setStatus(e.target.value)}
@@ -283,27 +269,27 @@ const userId = user?._id;
         <button
           type="button"
           onClick={addLine}
-          className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          className="flex items-center gap-2 px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600"
         >
           <Plus size={18} /> Ajouter un article / service
         </button>
       </div>
 
-      <div className="overflow-x-auto mb-4">
+      <div className="mb-4 overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border px-4 py-2 text-left">Description</th>
-              <th className="border px-4 py-2 text-center">Quantité</th>
-              <th className="border px-4 py-2 text-right">Prix unitaire (DT)</th>
-              <th className="border px-4 py-2 text-right">Total (DT)</th>
-              <th className="border px-4 py-2 w-16"></th>
+              <th className="px-4 py-2 text-left border">Description</th>
+              <th className="px-4 py-2 text-center border">Quantité</th>
+              <th className="px-4 py-2 text-right border">Prix unitaire (DT)</th>
+              <th className="px-4 py-2 text-right border">Total (DT)</th>
+              <th className="w-16 px-4 py-2 border"></th>
             </tr>
           </thead>
           <tbody>
             {lines.map((line) => (
               <tr key={line.tempId}>
-                <td className="border px-2 py-2">
+                <td className="px-2 py-2 border">
                   <input
                     type="text"
                     value={line.description}
@@ -311,24 +297,24 @@ const userId = user?._id;
                     className="w-full px-2 py-1 border border-gray-300 rounded"
                   />
                 </td>
-                <td className="border px-2 py-2">
+                <td className="px-2 py-2 border">
                   <input
                     type="number"
                     value={line.quantite}
                     onChange={(e) => updateLine(line.tempId, "quantite", parseFloat(e.target.value) || 0)}
-                    className="w-full text-center border px-2 py-1 rounded"
+                    className="w-full px-2 py-1 text-center border rounded"
                   />
                 </td>
-                <td className="border px-2 py-2">
+                <td className="px-2 py-2 border">
                   <input
                     type="number"
                     value={line.prixUnitaire}
                     onChange={(e) => updateLine(line.tempId, "prixUnitaire", parseFloat(e.target.value) || 0)}
-                    className="w-full text-right border px-2 py-1 rounded"
+                    className="w-full px-2 py-1 text-right border rounded"
                   />
                 </td>
-                <td className="border px-4 py-2 text-right font-medium">{line.totalLigne.toFixed(2)}</td>
-                <td className="border px-2 py-2 text-center">
+                <td className="px-4 py-2 font-medium text-right border">{line.totalLigne.toFixed(2)}</td>
+                <td className="px-2 py-2 text-center border">
                   <button type="button" onClick={() => removeLine(line.tempId)} className="text-red-500 hover:text-red-700">
                     <Trash2 size={18} />
                   </button>
@@ -339,13 +325,13 @@ const userId = user?._id;
         </table>
       </div>
 
-      <div className="text-right text-xl font-bold mb-6">
+      <div className="mb-6 text-xl font-bold text-right">
         Total HT: {totalHT.toFixed(2)} DT
       </div>
 
       <button type="submit" 
       
-   className="flex justify-end flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-bleu-700"
+   className="flex items-center justify-end gap-2 px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-bleu-700"
       >
        
         {quoteToEdit ? "Mettre à jour le devis" : " Enregistrer le devis"}

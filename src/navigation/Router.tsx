@@ -22,7 +22,11 @@ export default function AppRouter() {
     },
     {
       path: PublicPaths.accessDenied,
-      element: <PublicScreens.AccessDenied />,
+      element: (
+        <AuthGuard>
+          <PublicScreens.AccessDenied />
+        </AuthGuard>)
+
     },
 
     {
@@ -96,27 +100,27 @@ export default function AppRouter() {
         </AdminGuard>
       ),
     },
-  {
-  path: PrivatePaths.createQuotes,
-  element: (
-    <AdminGuard>
-      <Layout>
-        <PrivateScreens.QuoteForm />
-      </Layout>
-    </AdminGuard>
-  ),
-},
+    {
+      path: PrivatePaths.createQuotes,
+      element: (
+        <AuthGuard>
+          <Layout>
+            <PrivateScreens.QuoteForm />
+          </Layout>
+        </AuthGuard>
+      ),
+    },
 
-  {
-  path: PrivatePaths.createInvoices,
-  element: (
-    <AdminGuard>
-      <Layout>
-        <PrivateScreens.InvoiceForm />
-      </Layout>
-    </AdminGuard>
-  ),
-},
+    {
+      path: PrivatePaths.createInvoices,
+      element: (
+        <AuthGuard>
+          <Layout>
+            <PrivateScreens.InvoiceForm />
+          </Layout>
+        </AuthGuard>
+      ),
+    },
 
 
     {

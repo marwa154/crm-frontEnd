@@ -5,7 +5,6 @@ export const useStats = () => {
   return useQuery({
     queryKey: ["stats"],
     queryFn: getStats,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+
   });
 };

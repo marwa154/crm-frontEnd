@@ -20,7 +20,7 @@ export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(true); // 👈 track loading
+  const [isRestoring, setIsRestoring] = useState(true); 
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");

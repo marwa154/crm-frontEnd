@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Search, Download } from 'lucide-react';
 import axios from 'axios';
-  import * as XLSX from "xlsx";
+import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 interface LogEntry {
@@ -27,7 +27,7 @@ export default function Logs() {
         headers: { Authorization: `Bearer ${token}` },
         params: { t: Date.now() },
       });
-     
+
       return res.data;
     } catch (err) {
       console.error('Erreur récupération logs:', err);
@@ -40,17 +40,17 @@ export default function Logs() {
     fetchLogs(token).then((data) => setLogs(data));
   }, [token]);
 
- const filteredLogs = logs.filter((log) => {
-  // Récupérer le nom de l'utilisateur si userId est un objet, sinon utiliser l'ID
-  const userName = typeof log.userId === 'object' ? log.userId.name : log.userId;
-  const term = searchTerm.toLowerCase();
+  const filteredLogs = logs.filter((log) => {
+    // Récupérer le nom de l'utilisateur si userId est un objet, sinon utiliser l'ID
+    const userName = typeof log?.userId === 'object' ? log.userId.name : log?.userId;
+    const term = searchTerm.toLowerCase();
 
-  return (
-    userName?.toLowerCase().includes(term) ||
-    log.description.toLowerCase().includes(term) ||
-    log.module.toLowerCase().includes(term)
-  );
-});
+    return (
+      userName?.toLowerCase().includes(term) ||
+      log.description.toLowerCase().includes(term) ||
+      log.module.toLowerCase().includes(term)
+    );
+  });
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -75,39 +75,37 @@ export default function Logs() {
   };
 
 
-// ...
+  const handleExport = () => {
+    if (filteredLogs.length === 0) {
+      alert("Aucun log à exporter !");
+      return;
+    }
 
-const handleExport = () => {
-  if (filteredLogs.length === 0) {
-    alert("Aucun log à exporter !");
-    return;
-  }
+    // Transformer les logs en tableau simple
+    const exportData = filteredLogs.map((log) => ({
+      Utilisateur: typeof log?.userId === "object" ? log?.userId.name : log?.userId,
+      Module: log.module,
+      Type: getTypeLabel(log.typeAction),
+      Description: log.description,
+      Date: new Date(log.dateAction).toLocaleString(),
+    }));
 
-  // Transformer les logs en tableau simple
-  const exportData = filteredLogs.map((log) => ({
-    Utilisateur: typeof log.userId === "object" ? log.userId.name : log.userId,
-    Module: log.module,
-    Type: getTypeLabel(log.typeAction),
-    Description: log.description,
-    Date: new Date(log.dateAction).toLocaleString(),
-  }));
+    // Créer la feuille Excel
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
 
-  // Créer la feuille Excel
-  const worksheet = XLSX.utils.json_to_sheet(exportData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
+    // Générer le fichier
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
 
-  // Générer le fichier
-  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-
-  saveAs(blob, `logs_${new Date().toISOString().split("T")[0]}.xlsx`);
-};
+    saveAs(blob, `logs_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
 
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-700">Journal des actions</h1>
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -117,48 +115,48 @@ const handleExport = () => {
               placeholder="Rechercher..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
+              className="py-2 pl-8 pr-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
             />
           </div>
-          <button onClick={handleExport} className="bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+          <button onClick={handleExport} className="flex items-center gap-2 px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
             <Download size={18} />
             Exporter
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="overflow-hidden bg-white shadow-md rounded-xl">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100">
             <tr>
-              <th className="py-3 px-4 text-left">Utilisateur</th>
-              <th className="py-3 px-4 text-left">Module</th>
-              <th className="py-3 px-4 text-left">Type</th>
-              <th className="py-3 px-4 text-left">Description</th>
-              <th className="py-3 px-4 text-left">Date</th>
+              <th className="px-4 py-3 text-left">Utilisateur</th>
+              <th className="px-4 py-3 text-left">Module</th>
+              <th className="px-4 py-3 text-left">Type</th>
+              <th className="px-4 py-3 text-left">Description</th>
+              <th className="px-4 py-3 text-left">Date</th>
             </tr>
           </thead>
           <tbody>
             {filteredLogs.length > 0 ? (
               filteredLogs.map((log) => (
                 <tr key={log._id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4">{typeof log.userId === 'object' ? log.userId.name : log.userId}</td>
-                    
-                  <td className="py-3 px-4">{log.module}</td>
-                  <td className="py-3 px-4">
+                  <td className="px-4 py-3">{typeof log?.userId === 'object' ? log?.userId.name : log?.userId}</td>
+
+                  <td className="px-4 py-3">{log.module}</td>
+                  <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(log.typeAction)}`}>
                       {getTypeLabel(log.typeAction)}
                     </span>
                   </td>
-                  <td className="py-3 px-4">{log.description}</td>
-                  <td className="py-3 px-4 text-gray-500">
+                  <td className="px-4 py-3">{log.description}</td>
+                  <td className="px-4 py-3 text-gray-500">
                     {new Date(log.dateAction).toLocaleString()}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="text-center py-6 text-gray-500">
+                <td colSpan={5} className="py-6 text-center text-gray-500">
                   Aucun log trouvé.
                 </td>
               </tr>

@@ -34,7 +34,6 @@ export default function Layout({ children }: LayoutProps) {
   const token = localStorage.getItem('token');
   const userId = user?._id;
 
-  // 🔔 Récupérer le nombre de notifications non lues
   const fetchUnreadNotifications = async () => {
     if (!userId) return;
     try {
@@ -72,7 +71,6 @@ export default function Layout({ children }: LayoutProps) {
               <h1 className="ml-2 text-lg font-bold sm:text-xl text-slate-900 md:ml-0">Mini CRM</h1>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/*  Notifications */}
               <button
   onClick={() => navigate('/notifications')}
   className="relative p-2 text-slate-600 hover:text-slate-900"

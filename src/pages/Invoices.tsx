@@ -46,8 +46,6 @@ export default function Factures() {
   });
 
   const token = localStorage.getItem("token");
-
-  // 🔹 Charger toutes les factures
   const fetchFactures = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/facture/getallfacture", {
@@ -196,7 +194,7 @@ const generateInvoicePDF = (invoice: any) => {
     setEditingFacture(null);
   };
 
-  // 🔹 Ajouter ou modifier une facture
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -216,7 +214,7 @@ const generateInvoicePDF = (invoice: any) => {
     }
   };
 
-  // Supprimer une facture
+
   const handleDelete = async (id: string) => {
     if (!window.confirm("Supprimer cette facture ?")) return;
     try {
@@ -229,24 +227,23 @@ const generateInvoicePDF = (invoice: any) => {
     }
   };
 
-  //  Filtrer les factures
-  //  Filtrer les factures
+
 const filteredFactures = factures.filter((f) => {
   const clientName =
     typeof f.clientId === "object" ? f.clientId.fullName.toLowerCase() : "";
   const invoiceNumber = f.invoiceNumber?.toLowerCase() || "";
   const status = f.status?.toLowerCase() || "";
   const totalTTC = f.totalTTC ? f.totalTTC.toString() : "";
-  // Convertir la date en string locale (ex: "12/11/2025")
+
   const invoiceDate = f.invoiceDate
     ? new Date(f.invoiceDate).toLocaleDateString("fr-FR")
     : "";
 
-  // Vérifier si le terme de recherche correspond à l’un des champs
+
   return (
     clientName.includes(searchTerm.toLowerCase()) ||
     invoiceNumber.includes(searchTerm.toLowerCase()) ||
-    invoiceDate.includes(searchTerm.toLowerCase()) || // 🔹 recherche par date
+    invoiceDate.includes(searchTerm.toLowerCase()) || 
     status.includes(searchTerm.toLowerCase()) ||
        totalTTC.includes(searchTerm)
   );
@@ -268,7 +265,6 @@ const filteredFactures = factures.filter((f) => {
         </button>
       </div>
 
-      {/* SEARCH BAR */}
       <div className="p-4 bg-white border shadow-sm rounded-xl border-slate-200">
         <div className="relative mb-6">
           <Search className="absolute w-5 h-5 transform -translate-y-1/2 left-3 top-1/2 text-slate-400" />
@@ -281,7 +277,7 @@ const filteredFactures = factures.filter((f) => {
           />
         </div>
 
-        {/* TABLE */}
+
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200">

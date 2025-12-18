@@ -30,7 +30,7 @@ export default function CreateInvoice() {
   const location = useLocation();
   const existingFacture = location.state?.facture || null;
   const devisFromState =   location.state?.quote|| null;
-    const isNewInvoice = location.state?.mode === "new"; // true si on vient du bouton "Nouvelle facture"
+    const isNewInvoice = location.state?.mode === "new"; 
   
     const randomPart = Math.floor(1000 + Math.random() * 9000); // nombre à 4 chiffres
     const codeUnique = `FAC-${new Date().getFullYear()}-${randomPart}`;
@@ -72,9 +72,6 @@ export default function CreateInvoice() {
   useEffect(() => {
   if (existingFacture) {
     // Modification facture
-
-
-    
     setFormData({
       ...existingFacture,
       clientId: existingFacture.clientId?._id || existingFacture.clientId,

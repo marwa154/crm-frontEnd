@@ -5,7 +5,6 @@ export const useDevis = () => {
   return useQuery({
     queryKey: ["devis"],
     queryFn: getDevis,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+
   });
 };
