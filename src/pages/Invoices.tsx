@@ -64,13 +64,13 @@ export default function Factures() {
 const generateInvoicePDF = (invoice: any) => {
   const doc = new jsPDF();
 
-  // 🎨 Couleurs du thème
+
   const primaryColor: [number, number, number] = [41, 128, 185]; // bleu
   const accentColor: [number, number, number] = [243, 156, 18]; // orange
   const textColor: [number, number, number] = [44, 62, 80];
   const lightGray: [number, number, number] = [236, 240, 241];
 
-  // 🧾 Titre
+ 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
   doc.setTextColor(...primaryColor);
@@ -81,7 +81,7 @@ const generateInvoicePDF = (invoice: any) => {
   doc.setFont("helvetica", "normal");
   doc.text(`Numéro : ${invoice.invoiceNumber}`, 105, 28, { align: "center" });
 
-  // 🧍 ENTREPRISE (ÉMETTEUR)
+  
   doc.setFillColor(...lightGray);
   doc.rect(14, 35, 90, 35, "F");
   doc.setFont("helvetica", "bold");
@@ -99,7 +99,7 @@ const generateInvoicePDF = (invoice: any) => {
     doc.text(`Email: ${invoice.userId.email}`, 16, y);
   }
 
-  // 👤 CLIENT
+  //  CLIENT
   doc.setFillColor(...lightGray);
   doc.rect(110, 35, 90, 35, "F");
   doc.setFont("helvetica", "bold");
@@ -118,7 +118,7 @@ const generateInvoicePDF = (invoice: any) => {
   y += 5;
   doc.text(`Statut : ${invoice.status}`, 112, y);
 
-  // 📋 Tableau des produits / services
+  //  Tableau des produits / services
   const tableStartY = 80;
   const tableData =
     invoice.lignes && invoice.lignes.length > 0
@@ -154,14 +154,14 @@ const generateInvoicePDF = (invoice: any) => {
 
   const finalY = (doc as any).lastAutoTable.finalY + 10;
 
-  // 💰 Totaux
+  // Totaux
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(...accentColor);
   doc.text("TOTAL TTC :", 130, finalY);
   doc.text(`${invoice.totalTTC?.toFixed(2)} DT`, 195, finalY, { align: "right" });
 
-  // 🖋️ Signature
+  // Signature
   const signatureY = Math.max(finalY + 40, 240);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
@@ -171,7 +171,7 @@ const generateInvoicePDF = (invoice: any) => {
   doc.text("Signature entreprise :", 130, signatureY);
   doc.line(130, signatureY + 2, 196, signatureY + 2);
 
-  // 📄 Pied de page
+  //  Pied de page
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
   doc.text(
@@ -216,7 +216,7 @@ const generateInvoicePDF = (invoice: any) => {
     }
   };
 
-  // 🔹 Supprimer une facture
+  // Supprimer une facture
   const handleDelete = async (id: string) => {
     if (!window.confirm("Supprimer cette facture ?")) return;
     try {
@@ -229,8 +229,8 @@ const generateInvoicePDF = (invoice: any) => {
     }
   };
 
-  // 🔹 Filtrer les factures
-  // 🔹 Filtrer les factures
+  //  Filtrer les factures
+  //  Filtrer les factures
 const filteredFactures = factures.filter((f) => {
   const clientName =
     typeof f.clientId === "object" ? f.clientId.fullName.toLowerCase() : "";
